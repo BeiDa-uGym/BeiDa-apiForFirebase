@@ -502,6 +502,44 @@ function signinCourseMember() {
 }
 
 async function 更新課程及報名人數(){
+  var courseData ;
+  var courseHistory;
+  var courseMember;
+    
+  // 讀取 課程資料，
+  databaseRef = database.ref("users/三峽運動中心/團課課程");
+  try {
+    const snapshot = await databaseRef.once('value');
+    const result = snapshot.val();
+    courseData = JSON.parse(result.現在課程);
+    courseHistory = JSON.parse(result.過去課程);     
+  }  catch (e) {
+    console.log("API:20 courseData 讀取失敗");
+    response.send("API:20 courseData 讀取失敗"); 
+    return 1;
+  }
+  
+  // 課程報名人數 加 1
+  courseData.forEach(function(course, index, array){
+    if (course[0]==inputParam.CourseId) {
+      course[7]= String(parseInt(course[7])+1);
+    }
+  });
+  //console.log(courseData);  
+  
+  // 將 課程資料 寫回資料庫
+  try {
+    const snapshot = await databaseRef.set({
+      現在課程: JSON.stringify(courseData),
+      過去課程: JSON.stringify(courseHistory),
+    }); 
+  } catch (e) {
+    console.log("API:20 courseData 寫入失敗");
+    response.send("API:20 courseData 寫入失敗"); 
+    return 1;
+  }
+  
+  // 讀取 課程會員資料
   var databaseRef = database.ref("users/三峽運動中心/課程管理");
   try {
     const snapshot = await databaseRef.once('value');
@@ -544,7 +582,19 @@ async function 更新課程及報名人數(){
   
   // CourseId 還沒被 UserPhoneNumber 報名過
   // push to courseMember    
-  courseMember[courseIndex].push([inputParam.UserName, "未繳費", "未簽到", inputParam.UserId, inputParam.PhoneNumber]);  
+
+  // 檢查是否為免費課程
+    var 免費課程 = "未繳費";
+    courseData.forEach(function(course, index, array){
+      if (course[0]==inputParam.CourseId) {
+        if ( course[5]=="免費" ||  course[5]=="0" ) {
+          免費課程 = "免費";
+          console.log("報名免費課程");
+        }
+      }        
+    });   
+  
+  courseMember[courseIndex].push([inputParam.UserName, 免費課程, "未簽到", inputParam.UserId, inputParam.PhoneNumber]);  
   
   databaseRef = database.ref("users/三峽運動中心/課程管理");
   try {
@@ -556,40 +606,7 @@ async function 更新課程及報名人數(){
     response.send("API:20 courseMember 寫入失敗"); 
     return 1;
   }
-  
-  // 讀取 課程資料，
-  databaseRef = database.ref("users/三峽運動中心/團課課程");
-  try {
-    const snapshot = await databaseRef.once('value');
-    const result = snapshot.val();
-    var courseData = JSON.parse(result.現在課程);
-    var courseHistory = JSON.parse(result.過去課程);     
-  }  catch (e) {
-    console.log("API:20 courseData 讀取失敗");
-    response.send("API:20 courseData 讀取失敗"); 
-    return 1;
-  }
-  
-  // 課程報名人數 加 1
-  courseData.forEach(function(course, index, array){
-    if (course[0]==inputParam.CourseId) {
-      course[7]= String(parseInt(course[7])+1);
-    }
-  });
-  //console.log(courseData);  
-  
-  // 將 課程資料 寫回資料庫
-  try {
-    const snapshot = await databaseRef.set({
-      現在課程: JSON.stringify(courseData),
-      過去課程: JSON.stringify(courseHistory),
-    }); 
-  } catch (e) {
-    console.log("API:20 courseData 寫入失敗");
-    response.send("API:20 courseData 寫入失敗"); 
-    return 1;
-  }  
-   
+       
   response.send("API:20 會員報名成功");
 }
 
