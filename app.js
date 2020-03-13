@@ -128,6 +128,10 @@ app.get('/', function (req, res) {
       console.log("呼叫 API:14 讀取 user profile");
       getUserProfile();  
       break;      
+    case "15":
+      console.log("呼叫 API:15 讀取 課表圖片");
+      get課表圖片();  
+      break;        
     case "20":
       console.log("呼叫 API:20 報名寫入 courseMember");
       writeCourseMember();  
@@ -461,6 +465,27 @@ function getUserProfile(){
     });
     
     if (!userFound) response.send("API:14 找不到 "+inputParam.UserId); 
+    
+  });  
+}
+
+function get課表圖片(){
+  // 讀取目前會員資料
+  database.ref("users/三峽運動中心團課課表").once("value").then(function (snapshot) {
+    //console.log(snapshot.val());
+    console.log("讀取課表圖片完成");
+    var result = snapshot.val();
+    
+//    try {
+//      var 團課圖片Url = JSON.parse(result.課程PicUrl);
+//      //console.log(memberData);
+//    } catch (e) {
+//      console.log("API:15 讀取資料庫失敗");
+//      response.send("API:15 讀取資料庫失敗");      
+//      return 0;
+//    }
+    
+    response.send(result.課程PicUrl); 
     
   });  
 }
