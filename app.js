@@ -586,7 +586,8 @@ async function 更新課程及報名人數(){
       if (course.length>1) {
         for (var i=1; i< course.length; i++) {
           //console.log(i, course[i]);
-          if (course[i][4]== inputParam.PhoneNumber){
+          //if (course[i][4]== inputParam.PhoneNumber){
+          if (course[i][3]== inputParam.UserId){
             //console.log(inputParam.UserName, "已經報名過 ", inputParam.CourseId);
             //response.send("API:20 "+inputParam.UserName+" 已經報名過 "+inputParam.CourseId);   
             userInCourse = true;
@@ -659,22 +660,27 @@ async function 更新課程會員報名狀態(){
       if (course.length>1) {
         for (var i=1; i< course.length; i++) {
           //console.log(i, course[i][2]);
-          if (course[i][4]== inputParam.PhoneNumber){  
-            userInCourse = true;
-            memberIndex  = i;
-          }
           if (course[i][2]== "已簽到"){ 
             userSigned = true;
-          }
-          
-          if (userInCourse == true) break;
+          } else {
+            userSigned = false;
+          }          
+          //if (course[i][4]== inputParam.PhoneNumber){  
+          if (course[i][3]== inputParam.UserId){  
+            userInCourse = true;
+            memberIndex  = i;
+            break;
+          }          
+          //if (userInCourse == true) break;
         }
       }
     }
   });
   // 結束: 檢查是否已報名  
    
-  // 已經簽名過
+  //console.log("***", userInCourse, userSigned, courseIndex, memberIndex);  
+  
+  // 已經簽到過
   if (userInCourse && userSigned) {
     console.log(inputParam.UserName, "已經簽到過 ", inputParam.CourseId);
     response.send("API:21 "+inputParam.UserName+" 已經簽到過 "+inputParam.CourseId); 
@@ -683,10 +689,9 @@ async function 更新課程會員報名狀態(){
   
   // CourseId 還沒被 UserPhoneNumber 簽名過
   courseMember[courseIndex][memberIndex][2]= "已簽到";
-  console.log(courseMember[courseIndex][memberIndex]);
-  
+  //console.log(courseIndex, memberIndex, courseMember[courseIndex][memberIndex]);
 
-  //測試時，先不要寫入資料庫
+  
   databaseRef = database.ref("users/三峽運動中心/課程管理");
   try {
     const snapshot = await databaseRef.set({
