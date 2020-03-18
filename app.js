@@ -539,8 +539,8 @@ async function 更新課程及報名人數(){
     courseData = JSON.parse(result.現在課程);
     courseHistory = JSON.parse(result.過去課程);     
   }  catch (e) {
-    console.log("API:20 courseData 讀取失敗");
-    response.send("API:20 courseData 讀取失敗"); 
+    console.log("API:20 課程資料 讀取失敗");
+    response.send("API:20 課程資料 讀取失敗"); 
     return 1;
   }
   
@@ -559,8 +559,8 @@ async function 更新課程及報名人數(){
       過去課程: JSON.stringify(courseHistory),
     }); 
   } catch (e) {
-    console.log("API:20 courseData 寫入失敗");
-    response.send("API:20 courseData 寫入失敗"); 
+    console.log("API:20 課程資料 寫入失敗");
+    response.send("API:20 課程資料 寫入失敗"); 
     return 1;
   }
   
@@ -571,8 +571,8 @@ async function 更新課程及報名人數(){
     const result = snapshot.val();
     courseMember = JSON.parse(result.課程會員);   
   } catch (e) {
-    console.log("API:20 courseMember 讀取失敗");
-    response.send("API:20 courseMember 讀取失敗"); 
+    console.log("API:20 課程會員 讀取失敗");
+    response.send("API:20 課程會員 讀取失敗"); 
     return 1;
   }  
   
