@@ -545,9 +545,16 @@ async function 更新課程及報名人數(){
   }
   
   // 課程報名人數 加 1
+  // 2020-07-07 要根據課程人數限制報名人數
   courseData.forEach(function(course, index, array){
     if (course[0]==inputParam.CourseId) {
-      course[7]= String(parseInt(course[7])+1);
+      if (course[7] >= course[6]) {
+        console.log("API:20 超過課程人數上限");
+        response.send("API:20 超過課程人數上限"); 
+        return 1;        
+      } else {
+        course[7]= String(parseInt(course[7])+1);
+      }
     }
   });
   //console.log(courseData);  
