@@ -1,6 +1,6 @@
 // 北大三峽用的 APIs
 
-var version ="V1.1";
+var version ="V1.2";
 
 var express = require('express');
 var request = require("request");
@@ -546,18 +546,24 @@ async function 更新課程及報名人數(){
   
   // 課程報名人數 加 1
   // 2020-07-07 要根據課程人數限制報名人數
+  // 2020-08-24 前一次修改用 return 1 是 bug, v1.2 這版修正
+  var 超過課程人數上限 = false;
   courseData.forEach(function(course, index, array){
     if (course[0]==inputParam.CourseId) {
       // 2020-07-08 fixed the problem with missing parseInt
       if (parseInt(course[7]) >= parseInt(course[6])) {
-        console.log("API:20 超過課程人數上限");
-        response.send("API:20 超過課程人數上限"); 
-        return 1;        
+        // return 1; 此為 bug
+        超過課程人數上限 = true; //設定跳出 flag，之後用來結束此function
       } else {
         course[7]= String(parseInt(course[7])+1);
       }
     }
   });
+  if (超過課程人數上限) {
+    console.log("API:20 超過課程人數上限");
+    response.send("API:20 超過課程人數上限"); 
+    return 1;
+  }
   //console.log(courseData);  
   
   // 將 課程資料 寫回資料庫
