@@ -651,6 +651,7 @@ async function 更新課程及報名人數(){
   //console.log(courseData);  
   
   // 將 課程資料 寫回資料庫
+  databaseRef = database.ref("users/三峽運動中心/團課課程");
   try {
     const snapshot = await databaseRef.set({
       現在課程: JSON.stringify(courseData),
