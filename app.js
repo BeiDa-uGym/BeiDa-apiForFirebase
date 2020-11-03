@@ -632,6 +632,7 @@ async function 更新課程及報名人數(){
   // 2020-07-07 要根據課程人數限制報名人數
   // 2020-08-24 前一次修改用 return 1 是 bug, v1.2 這版修正
   var 超過課程人數上限 = false;
+  var courseIndex = -1;
   courseData.forEach(function(course, index, array){
     if (course[0]==inputParam.CourseId) {
       // 2020-07-08 fixed the problem with missing parseInt
@@ -640,6 +641,7 @@ async function 更新課程及報名人數(){
         超過課程人數上限 = true; //設定跳出 flag，之後用來結束此function
       } else {
         course[7]= String(parseInt(course[7])+1);
+        courseIndex = index;
       }
     }
   });
@@ -659,6 +661,8 @@ async function 更新課程及報名人數(){
     }); 
   } catch (e) {
     console.log("API:20 課程資料 寫入失敗", e);
+    //revert 報名人數
+    courseData[courseIndex][7]= String(parseInt(courseData[courseIndex][7])+1);
     response.send("API:20 課程資料 寫入失敗"); 
     return 1;
   }
@@ -721,7 +725,8 @@ async function 更新課程及報名人數(){
       課程會員: JSON.stringify(courseMember),
     }); 
   } catch (e) {
-    console.log("API:20 courseMember 寫入失敗");
+    console.log("API:20 courseMember 寫入失敗",e);
+    //TODO: Revert courseData
     response.send("API:20 courseMember 寫入失敗"); 
     return 1;
   }
