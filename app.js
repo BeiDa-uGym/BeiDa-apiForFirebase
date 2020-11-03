@@ -1,6 +1,6 @@
 // 北大三峽用的 APIs
 
-var version ="V1.2";
+var version ="V2.0"; //Cache Firebase database to prevent huge data download bandwidth and cost
 
 var express = require('express');
 var request = require("request");
@@ -28,6 +28,11 @@ admin.initializeApp({
 
 var database = admin.database(); // 初始資料庫
 // Firebase 設定結束
+
+//Read data and set on handlers for Firebase database
+ReadDataFromFirebase();
+
+
 
 // express 設定
 app.use(function (req, res, next) {
@@ -1103,3 +1108,31 @@ function writeChallengeMember() {
   });    
 }
 // 挑戰賽管理 APIs END=================================================================
+
+//Read data and set on handlers for Firebase database
+function ReadDataFromFirebase(){
+  
+  //on() listener to reflect a change in the database 
+  //Example
+  database.ref("users/三峽運動中心/Test")
+  .on("value", function (snapshot) {
+    var result = snapshot.val();
+    console.log("Test is changed to:", result);    
+  });      
+  
+  // 讀取目前會員資料
+  database.ref("users/三峽運動中心/客戶管理")
+  .on("value", function (snapshot) {
+    //console.log(snapshot.val());
+    console.log("資料庫會員資料讀取完成");
+    var result = snapshot.val();
+    console.log("會員資料 is changed");
+    try {
+      memberData = JSON.parse(result.會員資料);
+      console.log(memberData);
+    } catch (e) {
+      console.log("API:00 讀取資料庫失敗");   
+    }
+  });  
+  
+}
