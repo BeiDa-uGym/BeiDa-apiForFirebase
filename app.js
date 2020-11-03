@@ -14,6 +14,7 @@ var courseData =[];
 var courseHistory = [];
 var courseMember = [];
 var memberAlreadyExist = false;
+var 課程PicUrl ="";
 
 
 console.log("Version:", version);
@@ -511,21 +512,12 @@ function getUserPhoneNUmber() {
 }
 
 function getUserProfile(){
-  // 讀取目前會員資料
-  database.ref("users/三峽運動中心/客戶管理").once("value").then(function (snapshot) {
-    //console.log(snapshot.val());
-    console.log("資料庫會員資料讀取完成");
-    var result = snapshot.val();
-    
-    try {
-      memberData = JSON.parse(result.會員資料);
-      //console.log(memberData);
-    } catch (e) {
+  
+  if (memberData ==[]){
       console.log("API:14 讀取資料庫失敗");
-      response.send("API:14 讀取資料庫失敗");      
-      return 0;
-    }
-    
+      response.send("API:14 讀取資料庫失敗");
+    return 0;
+  } else {
     var userFound=false;
     memberData.forEach(function(member, index, array){
      if (member[6] == inputParam.UserId) {
@@ -535,30 +527,61 @@ function getUserProfile(){
      }
     });
     
-    if (!userFound) response.send("API:14 找不到 "+inputParam.UserId); 
-    
-  });  
+    if (!userFound) response.send("API:14 找不到 "+inputParam.UserId);     
+  }
+  
+  // 讀取目前會員資料
+  //database.ref("users/三峽運動中心/客戶管理").once("value").then(function (snapshot) {
+  //  //console.log(snapshot.val());
+  //  console.log("資料庫會員資料讀取完成");
+  //  var result = snapshot.val();
+  //
+  //  try {
+  //    memberData = JSON.parse(result.會員資料);
+  //    //console.log(memberData);
+  //  } catch (e) {
+  //    console.log("API:14 讀取資料庫失敗");
+  //    response.send("API:14 讀取資料庫失敗");      
+  //    return 0;
+  //  }
+  //
+  //  var userFound=false;
+  //  memberData.forEach(function(member, index, array){
+  //   if (member[6] == inputParam.UserId) {
+  //     response.send(member);
+  //     userFound = true;
+  //     return 0;
+  //   }
+  //  });
+  //
+  //  if (!userFound) response.send("API:14 找不到 "+inputParam.UserId); 
+  //
+  //});  
 }
 
 function get課表圖片(){
-  // 讀取目前會員資料
-  database.ref("users/三峽運動中心團課課表").once("value").then(function (snapshot) {
-    //console.log(snapshot.val());
-    console.log("讀取課表圖片完成");
-    var result = snapshot.val();
-    
-//    try {
-//      var 團課圖片Url = JSON.parse(result.課程PicUrl);
-//      //console.log(memberData);
-//    } catch (e) {
-//      console.log("API:15 讀取資料庫失敗");
-//      response.send("API:15 讀取資料庫失敗");      
-//      return 0;
-//    }
-    
-    response.send(result.課程PicUrl); 
-    
-  });  
+  
+  console.log("API:15 課程PicUrl 為 '", 課程PicUrl, "'"); 
+  response.send(課程PicUrl); 
+   
+  // 讀取目前課表圖片
+  //database.ref("users/三峽運動中心團課課表").once("value").then(function (snapshot) {
+  //  //console.log(snapshot.val());
+  //  console.log("讀取課表圖片完成");
+  //  var result = snapshot.val();
+  //
+  ////    try {
+  ////      var 團課圖片Url = JSON.parse(result.課程PicUrl);
+  ////      //console.log(memberData);
+  ////    } catch (e) {
+  ////      console.log("API:15 讀取資料庫失敗");
+  ////      response.send("API:15 讀取資料庫失敗");      
+  ////      return 0;
+  ////    }
+  //
+  //  response.send(result.課程PicUrl); 
+  //
+  //});  
 }
 
 //?API=20&UserName=小林&CourseId=U0002&UserId=U12345678901234567890123456789012&PhoneNumber=0932000000
@@ -598,23 +621,13 @@ function signinCourseMember() {
 }
 
 async function 更新課程及報名人數(){
-  var courseData ;
-  var courseHistory;
-  var courseMember;
-    
-  // 讀取 課程資料，
-  databaseRef = database.ref("users/三峽運動中心/團課課程");
-  try {
-    const snapshot = await databaseRef.once('value');
-    const result = snapshot.val();
-    courseData = JSON.parse(result.現在課程);
-    courseHistory = JSON.parse(result.過去課程);     
-  }  catch (e) {
+
+  if (courseData==[] | courseHistory==[]){
     console.log("API:20 課程資料 讀取失敗");
     response.send("API:20 課程資料 讀取失敗"); 
     return 1;
   }
-  
+      
   // 課程報名人數 加 1
   // 2020-07-07 要根據課程人數限制報名人數
   // 2020-08-24 前一次修改用 return 1 是 bug, v1.2 這版修正
@@ -649,17 +662,11 @@ async function 更新課程及報名人數(){
     return 1;
   }
   
-  // 讀取 課程會員資料
-  var databaseRef = database.ref("users/三峽運動中心/課程管理");
-  try {
-    const snapshot = await databaseRef.once('value');
-    const result = snapshot.val();
-    courseMember = JSON.parse(result.課程會員);   
-  } catch (e) {
+  if (courseMember ==[]){
     console.log("API:20 課程會員 讀取失敗");
     response.send("API:20 課程會員 讀取失敗"); 
-    return 1;
-  }  
+    return 1;    
+  }
   
   // 檢查是否已報名
   var courseIndex=-1;
@@ -706,7 +713,7 @@ async function 更新課程及報名人數(){
     });   
   
   courseMember[courseIndex].push([inputParam.UserName, 免費課程, "未簽到", inputParam.UserId, inputParam.PhoneNumber]);  
-  
+  //寫入資料庫
   databaseRef = database.ref("users/三峽運動中心/課程管理");
   try {
     const snapshot = await databaseRef.set({
@@ -722,16 +729,12 @@ async function 更新課程及報名人數(){
 }
 
 async function 更新課程會員報名狀態(){
-  var databaseRef = database.ref("users/三峽運動中心/課程管理");
-  try {
-    const snapshot = await databaseRef.once('value');
-    const result = snapshot.val();
-    courseMember = JSON.parse(result.課程會員);   
-  } catch (e) {
-    console.log("API:20 courseMember 讀取失敗");
-    response.send("API:20 courseMember 讀取失敗"); 
-    return 1;
-  }  
+  
+  if (courseMember ==[]){
+    console.log("API:21 courseMember 讀取失敗");
+    response.send("API:21 courseMember 讀取失敗"); 
+    return 1;    
+  }
   
   // 檢查 user 是否已簽到
   var courseIndex=-1;
@@ -783,8 +786,8 @@ async function 更新課程會員報名狀態(){
       課程會員: JSON.stringify(courseMember),
     }); 
   } catch (e) {
-    console.log("API:20 courseMember 寫入失敗");
-    response.send("API:20 courseMember 寫入失敗"); 
+    console.log("API:21 courseMember 寫入失敗");
+    response.send("API:21 courseMember 寫入失敗"); 
     return 1;
   }
      
@@ -792,6 +795,8 @@ async function 更新課程會員報名狀態(){
 }
 
 // 課程管理 APIs END=================================================================
+
+//2020-11-03 以下還沒用 database.ref().on() 來降低 Firebase 的 download bandwidth
 
 // 優惠券管理 APIs ====================================================================
 function readCouponData(){
@@ -1246,4 +1251,14 @@ function ReadDataFromFirebase(){
       console.log("Member Data 讀取失敗");
     }
   });  
+  
+  // 讀取目前課表圖片
+  database.ref("users/三峽運動中心團課課表")
+    .on("value", function (snapshot) {
+    var result = snapshot.val();
+    課程PicUrl = result.課程PicUrl
+    console.log("讀取課表圖片完成", 課程PicUrl);    
+  });  
+  
+  
 }
