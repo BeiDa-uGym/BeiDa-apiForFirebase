@@ -657,7 +657,7 @@ async function 更新課程及報名人數(){
       過去課程: JSON.stringify(courseHistory),
     }); 
   } catch (e) {
-    console.log("API:20 課程資料 寫入失敗");
+    console.log("API:20 課程資料 寫入失敗", e);
     response.send("API:20 課程資料 寫入失敗"); 
     return 1;
   }
