@@ -10,6 +10,8 @@ var port = process.env.PORT || 5000
 var response;
 var inputParam;
 var memberData = [];
+var courseData =[];
+var courseHistory = [];
 var courseMember = [];
 var memberAlreadyExist = false;
 
@@ -197,111 +199,130 @@ app.listen(port, function () {
 // 檢查會員是否已存在
 function checkMember(){
   memberAlreadyExist = false;
-  // 讀取目前會員資料
-  database.ref("users/三峽運動中心/客戶管理").once("value").then(function (snapshot) {
-    //console.log(snapshot.val());
-    console.log("資料庫會員資料讀取完成");
-    var result = snapshot.val();
-    
-    try {
-      memberData = JSON.parse(result.會員資料);
-      //console.log(memberData);
-    } catch (e) {
-      console.log("API:00 讀取資料庫失敗");
-      response.send("API:00 讀取資料庫失敗");      
-      return 0;
-    }
-    
-    memberData.forEach(function(member, index, array){
-     if (member[6] == inputParam.UserId) {
-       memberAlreadyExist = true;
-     }
-    });
-    
-    if (memberAlreadyExist) {
-      response.send("API:00 會員已存在");
-    } else {
-      response.send("API:00 會員不存在");      
-    }
+  
+  if (memberData ==[]){
+    console.log("API:00 讀取資料庫失敗");
+    response.send("API:00 讀取資料庫失敗");      
+    return 0;
+  }
+
+  var memberIdex=-1;
+  memberData.forEach(function(member, index, array){
+   if (member[6] == inputParam.UserId) {
+     memberAlreadyExist = true;
+     memberIdex = index;     
+   }
   });
+
+  if (memberAlreadyExist) {
+    console.log("API:00 會員已存在");    
+    response.send("API:00 會員已存在");   
+  } else {
+    response.send("API:00 會員不存在");   
+    console.log("API:00 會員不存在");      
+  }
 }
 
 // 增加新會員到資料庫
 function addMember() {
-  // 讀取目前會員資料
-  database.ref("users/三峽運動中心/客戶管理").once("value").then(function (snapshot) {
-    //console.log(snapshot.val());
-    console.log("資料庫會員資料讀取完成");
-    var result = snapshot.val();
+  memberAlreadyExist = false;
+  
+  if (memberData ==[]){
+    console.log("API:01 讀取資料庫失敗");
+    response.send("API:01 讀取資料庫失敗");      
+    return 0;
+  }
     
-    try {
-      memberData = JSON.parse(result.會員資料);
-      //console.log(memberData);
-    } catch (e) {
-      console.log("API:01 讀取資料庫失敗");
-      response.send("API:01 讀取資料庫失敗");      
-      return 0;
-    }
-    
-    // 檢查是否有相同的名字及 LineId
-    memberAlreadyExist = false;
-    memberData.forEach(function(member, index, array){
-     if (member[6] == inputParam.UserId) {
-       memberAlreadyExist = true;
-     }
-    });   
-    
-    if (memberAlreadyExist) {
-      response.send("API:01 會員已存在");
-    } else {
-      // 呼叫寫入資料庫涵式
-      console.log("API:01 會員不存在，寫入新會員");
-      
-      // addAndWriteToFirebase(成功訊息，失敗訊息)
-      addAndWriteToFirebase("API:01 會員寫入成功", "API:01 會員寫入失敗");     
-    }    
-  });
+  // 檢查是否有相同的名字及 LineId
+  memberData.forEach(function(member, index, array){
+   if (member[6] == inputParam.UserId) {
+     memberAlreadyExist = true;
+   }
+  });   
+
+  if (memberAlreadyExist) {
+    response.send("API:01 會員已存在");
+  } else {
+    // 呼叫寫入資料庫涵式
+    console.log("API:01 會員不存在，寫入新會員");
+
+    // addAndWriteToFirebase(成功訊息，失敗訊息, writeType="add"|"update")
+    addAndWriteToFirebase("API:01 會員寫入成功", "API:01 會員寫入失敗", "add");     
+  }    
+
 }
 
 // 更新會員資料到資料庫
+function Backup_updateMember() { //可以刪掉
+  memberAlreadyExist = false;  
+
+  if (memberData ==[]){
+    console.log("API:02 讀取資料庫失敗");
+    response.send("API:02 讀取資料庫失敗");      
+    return 0;
+  }
+    
+  // 檢查是否有相同的名字及 LineId
+  var memberIdex=-1;
+  memberData.forEach(function(member, index, array){
+   if (member[6] == inputParam.UserId) {
+     memberAlreadyExist = true;
+     memberIdex = index;
+   }
+  });   
+
+  if (memberAlreadyExist) {
+    console.log("API:02 會員存在，更新資料");
+    // 刪除 舊會員
+    console.log(memberIdex);
+    memberData.splice(memberIdex,1);
+    console.log(memberData);
+    // 新增 新會員
+    addAndWriteToFirebase("API:02 資料更新成功", "API:02 資料更新失敗", "update");
+  } else {
+    response.send("API:02 會員不存在");
+  }    
+}
+
 function updateMember() {
-  // 讀取目前會員資料
-  database.ref("users/三峽運動中心/客戶管理").once("value").then(function (snapshot) {
-    //console.log(snapshot.val());
-    console.log("資料庫會員資料讀取完成");
-    var result = snapshot.val();
+  memberAlreadyExist = false;  
+
+  if (memberData ==[]){
+    console.log("API:02 讀取資料庫失敗");
+    response.send("API:02 讀取資料庫失敗");      
+    return 0;
+  }
     
-    try {
-      memberData = JSON.parse(result.會員資料);
-      //console.log(memberData);
-    } catch (e) {
-      console.log("API:02 讀取資料庫失敗");
-      response.send("API:02 讀取資料庫失敗");      
-      return 0;
-    }
-    
-    // 檢查是否有相同的名字及 LineId
-    var memberIdex=-1;
-    memberAlreadyExist = false;
-    memberData.forEach(function(member, index, array){
-     if (member[6] == inputParam.UserId) {
-       memberAlreadyExist = true;
-       memberIdex = index;
-     }
-    });   
-    
-    if (memberAlreadyExist) {
-      console.log("API:02 會員存在，更新資料");
-      // 刪除 舊會員
-      console.log(memberIdex);
-      memberData.splice(memberIdex,1);
-      console.log(memberData);
-      // 新增 新會員
-      addAndWriteToFirebase("API:02 資料更新成功", "API:02 資料更新失敗");
-    } else {
-      response.send("API:02 會員不存在");
-    }    
-  });
+  // 檢查是否有相同的名字及 LineId
+  var memberIdex=-1;
+  memberData.forEach(function(member, index, array){
+   if (member[6] == inputParam.UserId) {
+     memberAlreadyExist = true;
+     memberIdex = index;
+   }
+  });   
+
+  if (memberAlreadyExist) {
+    console.log("API:02 會員存在，更新資料");
+    memberData[memberIdex][0] = inputParam.Name;
+    memberData[memberIdex][1] = inputParam.Gender,
+    memberData[memberIdex][2] = inputParam.Birth,
+    memberData[memberIdex][3] = inputParam.Phone,
+    memberData[memberIdex][4] = inputParam.ID,
+    memberData[memberIdex][5] = inputParam.Address,
+    memberData[memberIdex][6] = inputParam.UserId,    
+    memberData[memberIdex][7] = inputParam.PicURL, 
+    memberData[memberIdex][8] = inputParam.Height,
+    memberData[memberIdex][9] = inputParam.Weight,
+    memberData[memberIdex][10]= inputParam.EmergencyContact,
+    memberData[memberIdex][11]= inputParam.EmergencyPhone,     
+
+    console.log(memberData[memberIdex]);
+    // 更新會員
+    addAndWriteToFirebase("API:02 資料更新成功", "API:02 資料更新失敗", "update");
+  } else {
+    response.send("API:02 會員不存在");
+  }    
 }
 
 //?API=01&Name&Gender&Birth&Phone&ID&Address&UserId&PicURL&Height&Weight&EmergencyContact&EmergencyPhone
@@ -320,26 +341,28 @@ function updateMember() {
 //  '緊急連絡人'
 //  '緊急連絡電話'
 //]
-function addAndWriteToFirebase(成功訊息, 失敗訊息) {
+function addAndWriteToFirebase(成功訊息, 失敗訊息, writeType) {
   var dataToAdd =[];
-  dataToAdd = [
-    inputParam.Name,
-    inputParam.Gender,
-    inputParam.Birth,
-    inputParam.Phone,
-    inputParam.ID,
-    inputParam.Address,
-    inputParam.UserId,    
-    inputParam.PicURL, 
-    inputParam.Height,
-    inputParam.Weight,
-    inputParam.EmergencyContact,
-    inputParam.EmergencyPhone,     
-  ];
+  if (writeType == "add") {  
+    dataToAdd = [
+      inputParam.Name,
+      inputParam.Gender,
+      inputParam.Birth,
+      inputParam.Phone,
+      inputParam.ID,
+      inputParam.Address,
+      inputParam.UserId,    
+      inputParam.PicURL, 
+      inputParam.Height,
+      inputParam.Weight,
+      inputParam.EmergencyContact,
+      inputParam.EmergencyPhone,     
+    ];
 
-  memberData.push(dataToAdd);
+    memberData.push(dataToAdd);
+  } 
 
-  console.log(memberData);
+  //console.log(memberData);
     
   database.ref('users/三峽運動中心/客戶管理').set({
     會員資料: JSON.stringify(memberData),
@@ -357,79 +380,96 @@ function addAndWriteToFirebase(成功訊息, 失敗訊息) {
 
 // 課程管理 APIs ====================================================================
 function readCourseData(){
+  
+  if (courseData ==[]) {
+    console.log("API:10 courseData 讀取失敗");
+    response.send("API:10 courseData 讀取失敗");
+  } else {
+    console.log("API:10 courseData 讀取成功");
+    response.send(JSON.stringify(courseData));
+  }
+  
   // 讀取目前 courseData
-  database.ref("users/三峽運動中心/團課課程").once("value").then(function (snapshot) {
-    //console.log(snapshot.val());
-    console.log("資料庫團課課程讀取完成");
-    var result = snapshot.val();
-    //console.log(result);
-    try {
-      //var courseData = JSON.parse(result.現在課程);
-      //console.log(courseData);
-      response.send(result.現在課程);     
-    } catch (e) {
-      console.log("API:10 courseData 讀取失敗");
-      response.send("API:10 courseData 讀取失敗");      
-      return 0;
-    }
-    console.log("API:10 courseData 讀取成功");   
-  });  
+  //database.ref("users/三峽運動中心/團課課程").once("value").then(function (snapshot) {
+  //  //console.log(snapshot.val());
+  //  console.log("資料庫團課課程讀取完成");
+  //  var result = snapshot.val();
+  //  //console.log(result);
+  //  try {
+  //    //var courseData = JSON.parse(result.現在課程);
+  //    //console.log(courseData);
+  //    response.send(result.現在課程);     
+  //  } catch (e) {
+  //    console.log("API:10 courseData 讀取失敗");
+  //    response.send("API:10 courseData 讀取失敗");      
+  //    return 0;
+  //  }
+  //  console.log("API:10 courseData 讀取成功");   
+  //});  
 }
 
 function readCourseHistory(){
+  
+  if (courseHistory ==[]) {
+    console.log("API:11 courseHistory 讀取失敗");
+    response.send("API:11 courseHistory 讀取失敗");
+  } else {
+    console.log("API:11 courseHistory 讀取成功");
+    response.send(JSON.stringify(courseHistory));
+  }
+  
   // 讀取目前 courseData
-  database.ref("users/三峽運動中心/團課課程").once("value").then(function (snapshot) {
-    //console.log(snapshot.val());
-    console.log("資料庫團課課程讀取完成");
-    var result = snapshot.val();
-    //console.log(result);
-    try {
-      response.send(result.過去課程);     
-    } catch (e) {
-      console.log("API:11 courseHistory 讀取失敗");
-      response.send("API:11 courseHistory 讀取失敗");      
-      return 0;
-    }
-    console.log("API:11 courseHistory 讀取成功");   
-  });  
+  //database.ref("users/三峽運動中心/團課課程").once("value").then(function (snapshot) {
+  //  //console.log(snapshot.val());
+  //  console.log("資料庫團課課程讀取完成");
+  //  var result = snapshot.val();
+  //  //console.log(result);
+  //  try {
+  //    response.send(result.過去課程);     
+  //  } catch (e) {
+  //    console.log("API:11 courseHistory 讀取失敗");
+  //    response.send("API:11 courseHistory 讀取失敗");      
+  //    return 0;
+  //  }
+  //  console.log("API:11 courseHistory 讀取成功");   
+  //});  
 }
 
 function readCourseMember(){
-  // 讀取目前 courseMember
-  database.ref("users/三峽運動中心/課程管理").once("value").then(function (snapshot) {
-    //console.log(snapshot.val());
-    //console.log("資料庫課程管理讀取完成");
-    var result = snapshot.val();
-    //console.log(result);
-    try {      
-      response.send(result.課程會員);
-    } catch (e) {
-      console.log("API:12 courseMember 讀取失敗");
-      response.send("API:12 courseMember 讀取失敗");      
-      return 0;
-    }
+  
+  if (courseMember ==[]) {
+    console.log("API:12 courseMember 讀取失敗");
+    response.send("API:12 courseMember 讀取失敗");
+  } else {
     console.log("API:12 courseMember 讀取成功");
-       
-  });  
+    response.send(JSON.stringify(courseMember));
+  }
+  
+  // 讀取目前 courseMember
+  //database.ref("users/三峽運動中心/課程管理").once("value").then(function (snapshot) {
+  //  //console.log(snapshot.val());
+  //  //console.log("資料庫課程管理讀取完成");
+  //  var result = snapshot.val();
+  //  //console.log(result);
+  //  try {      
+  //    response.send(result.課程會員);
+  //  } catch (e) {
+  //    console.log("API:12 courseMember 讀取失敗");
+  //    response.send("API:12 courseMember 讀取失敗");      
+  //    return 0;
+  //  }
+  //  console.log("API:12 courseMember 讀取成功");
+  //
+  //});  
 }
 
-
 function getUserPhoneNUmber() {
-  // 讀取目前會員資料
-  database.ref("users/三峽運動中心/客戶管理").once("value").then(function (snapshot) {
-    //console.log(snapshot.val());
-    console.log("資料庫會員資料讀取完成");
-    var result = snapshot.val();
-    
-    try {
-      memberData = JSON.parse(result.會員資料);
-      //console.log(memberData);
-    } catch (e) {
+
+  if (memberData ==[]){
       console.log("API:13 讀取資料庫失敗");
-      response.send("API:13 讀取資料庫失敗");      
-      return 0;
-    }
-    
+      response.send("API:13 讀取資料庫失敗");
+    return 0;
+  } else {
     var userFound=false;
     memberData.forEach(function(member, index, array){
      if (member[6] == inputParam.UserId) {
@@ -439,9 +479,35 @@ function getUserPhoneNUmber() {
      }
     });
     
-    if (!userFound) response.send("API:13 找不到 "+inputParam.UserId); 
-    
-  });  
+    if (!userFound) response.send("API:13 找不到 "+inputParam.UserId);     
+  }
+  
+  // 讀取目前會員資料
+  //database.ref("users/三峽運動中心/客戶管理").once("value").then(function (snapshot) {
+  //  //console.log(snapshot.val());
+  //  console.log("資料庫會員資料讀取完成");
+  //  var result = snapshot.val();
+  //
+  //  try {
+  //    memberData = JSON.parse(result.會員資料);
+  //    //console.log(memberData);
+  //  } catch (e) {
+  //    console.log("API:13 讀取資料庫失敗");
+  //    response.send("API:13 讀取資料庫失敗");      
+  //    return 0;
+  //  }
+  //
+  //  var userFound=false;
+  //  memberData.forEach(function(member, index, array){
+  //   if (member[6] == inputParam.UserId) {
+  //     response.send(member[3]);
+  //     userFound = true;
+  //     return 0;
+  //   }
+  //  });
+  //
+  //  if (!userFound) response.send("API:13 找不到 "+inputParam.UserId); 
+  //});  
 }
 
 function getUserProfile(){
@@ -1117,22 +1183,67 @@ function ReadDataFromFirebase(){
   database.ref("users/三峽運動中心/Test")
   .on("value", function (snapshot) {
     var result = snapshot.val();
-    console.log("Test is changed to:", result);    
+    console.log("Test is read changed to:", result);    
   });      
   
   // 讀取目前會員資料
+  console.log("讀取資料庫客戶管理...");
   database.ref("users/三峽運動中心/客戶管理")
   .on("value", function (snapshot) {
     //console.log(snapshot.val());
-    console.log("資料庫會員資料讀取完成");
     var result = snapshot.val();
-    console.log("會員資料 is changed");
+    console.log("客戶管理 is read or changed");
     try {
       memberData = JSON.parse(result.會員資料);
-      console.log(memberData);
+      //console.log(memberData);
     } catch (e) {
       console.log("API:00 讀取資料庫失敗");   
     }
   });  
+
+  // 讀取目前 courseData
+  console.log("讀取資料庫團課課程...");
+  database.ref("users/三峽運動中心/團課課程")
+  .on("value", function (snapshot) {
+    //console.log(snapshot.val());
+    var result = snapshot.val();
+    console.log("團課課程 is read or changed");
+    try {
+      courseData = JSON.parse(result.現在課程);
+      courseHistory = JSON.parse(result.過去課程);
+      //console.log(courseHistory);
+    } catch (e) {
+      console.log("API:10 courseData 讀取失敗");
+    }
+  });  
   
+  // 讀取目前 courseMember
+  console.log("讀取資料庫課程管理...");
+  database.ref("users/三峽運動中心/課程管理")
+  .on("value", function (snapshot) {
+    //console.log(snapshot.val());    
+    var result = snapshot.val();
+    console.log("課程管理 is read or changed");
+    try {      
+      courseMember = JSON.parse(result.課程會員); 
+      //console.log(courseMember);
+    } catch (e) {
+      console.log("courseMember 讀取失敗");
+    }
+  });
+  
+  // 讀取 memberData
+  console.log("讀取資料庫客戶管理...");
+  database.ref("users/三峽運動中心/客戶管理")
+  .on("value", function (snapshot) {
+    //console.log(snapshot.val());    
+    var result = snapshot.val();
+    console.log("客戶管理 is read or changed");
+    try {      
+      memberData = JSON.parse(result.會員資料); 
+      //console.log(memberData);
+    } catch (e) {
+      console.log("Member Data 讀取失敗");
+    }
+  });  
 }
