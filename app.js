@@ -537,9 +537,9 @@ function signinCourseMember() {
 }
 
 async function 更新課程及報名人數(){
-  var courseData ;
-  var courseHistory;
-  var courseMember;
+//  var courseData ;
+//  var courseHistory;
+//  var courseMember;
     
   // 讀取 課程資料, v2.02 改用 on 方式，就不用一直讀取
 //  databaseRef = database.ref("users/三峽運動中心/團課課程");
