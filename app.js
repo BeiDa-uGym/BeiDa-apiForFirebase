@@ -1275,19 +1275,19 @@ function ReadDataFromFirebase(){
   });
   
   // 讀取 memberData
-  console.log("讀取資料庫客戶管理...");
-  database.ref("users/三峽運動中心/客戶管理")
-  .on("value", function (snapshot) {
-    //console.log(snapshot.val());    
-    var result = snapshot.val();
-    console.log("客戶管理 is read or changed");
-    try {      
-      memberData = JSON.parse(result.會員資料); 
-      //console.log(memberData);
-    } catch (e) {
-      console.log("Member Data 讀取失敗");
-    }
-  });  
+//  console.log("讀取資料庫客戶管理...");
+//  database.ref("users/三峽運動中心/客戶管理")
+//  .on("value", function (snapshot) {
+//    //console.log(snapshot.val());    
+//    var result = snapshot.val();
+//    console.log("客戶管理 is read or changed");
+//    try {      
+//      memberData = JSON.parse(result.會員資料); 
+//      //console.log(memberData);
+//    } catch (e) {
+//      console.log("Member Data 讀取失敗");
+//    }
+//  });  
   
   // 讀取 coachSet
   console.log("讀取資料庫客戶管理...");
