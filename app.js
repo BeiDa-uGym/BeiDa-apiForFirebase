@@ -1,6 +1,6 @@
 // 北大三峽用的 APIs
 
-var version ="V2.0"; //Cache Firebase database to prevent huge data download bandwidth and cost
+var version ="V2.1"; //API16 memberData, API17 coachData for LINE web admin 來節省 firebase download bandwidth
 
 var express = require('express');
 var request = require("request");
@@ -13,6 +13,7 @@ var memberData = [];
 var courseData =[];
 var courseHistory = [];
 var courseMember = [];
+var coachSet=[];
 var memberAlreadyExist = false;
 var 課程PicUrl ="";
 
@@ -139,7 +140,15 @@ app.get('/', function (req, res) {
     case "15":
       console.log("呼叫 API:15 讀取 課表圖片");
       get課表圖片();  
-      break;        
+      break;     
+    case "16":
+      console.log("呼叫 API:16 讀取 memberData");
+      readMemberData();   
+      break;
+    case "17":
+      console.log("呼叫 API:17 讀取 coachSet");
+      readCoachSet();  
+      break;            
     case "20":
       console.log("呼叫 API:20 報名寫入 courseMember");
       writeCourseMember();  
@@ -582,6 +591,28 @@ function get課表圖片(){
   //  response.send(result.課程PicUrl); 
   //
   //});  
+}
+
+//?API=16 read memberData
+function readMemberData(){
+  if (memberData ==[]) {
+    console.log("API:16 memberData 讀取失敗");
+    response.send("API:16 memberData 讀取失敗");
+  } else {
+    console.log("API:16 courseMember 讀取成功");
+    response.send(JSON.stringify(memberData));
+  }  
+}
+
+//?API=17 read coachSet
+function readCoachSet(){
+  if (coachSet ==[]) {
+    console.log("API:17 coachSet 讀取失敗");
+    response.send("API:17 coachSet 讀取失敗");
+  } else {
+    console.log("API:16 coachSet 讀取成功");
+    response.send(JSON.stringify(coachSet));
+  }  
 }
 
 //?API=20&UserName=小林&CourseId=U0002&UserId=U12345678901234567890123456789012&PhoneNumber=0932000000
@@ -1257,6 +1288,21 @@ function ReadDataFromFirebase(){
       console.log("Member Data 讀取失敗");
     }
   });  
+  
+  // 讀取 coachSet
+  console.log("讀取資料庫客戶管理...");
+  database.ref("users/三峽運動中心/教練管理")
+  .on("value", function (snapshot) {
+    //console.log(snapshot.val());    
+    var result = snapshot.val();
+    console.log("教練管理 is read or changed");
+    try {      
+      coachSet = JSON.parse(result.老師資料); 
+      //console.log(memberData);
+    } catch (e) {
+      console.log("coachSet 讀取失敗");
+    }
+  }); 
   
   // 讀取目前課表圖片
   database.ref("users/三峽運動中心團課課表")
