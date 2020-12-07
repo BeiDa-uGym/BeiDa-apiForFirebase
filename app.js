@@ -1,6 +1,6 @@
 // 北大三峽用的 APIs
 
-var version ="V2.1"; //API16 memberData, API17 coachData for LINE web admin 來節省 firebase download bandwidth
+var version ="V2.11"; //API16 memberData, API17 coachData for LINE web admin 來節省 firebase download bandwidth
 
 var express = require('express');
 var request = require("request");
@@ -1234,7 +1234,7 @@ function ReadDataFromFirebase(){
   .on("value", function (snapshot) {
     //console.log(snapshot.val());
     var result = snapshot.val();
-    console.log("客戶管理 is read or changed");
+    console.log("會員資料 is read or changed");
     try {
       memberData = JSON.parse(result.會員資料);
       //console.log(memberData);
@@ -1244,20 +1244,34 @@ function ReadDataFromFirebase(){
   });  
 
   // 讀取目前 courseData
-  console.log("讀取資料庫團課課程...");
-  database.ref("users/三峽運動中心/團課課程")
+  console.log("讀取資料庫現在課程...");
+  database.ref("users/三峽運動中心/團課課程/現在課程")
   .on("value", function (snapshot) {
     //console.log(snapshot.val());
     var result = snapshot.val();
-    console.log("團課課程 is read or changed");
+    console.log("現在課程 is read or changed");
     try {
-      courseData = JSON.parse(result.現在課程);
-      courseHistory = JSON.parse(result.過去課程);
-      //console.log(courseHistory);
+      courseData = JSON.parse(result);
+      //console.log(courseData);
     } catch (e) {
-      console.log("API:10 courseData 讀取失敗");
+      console.log("courseData 讀取失敗");
     }
   });  
+  
+  // 讀取目前 courseHistory
+  console.log("讀取資料庫過去課程...");
+  database.ref("users/三峽運動中心/團課課程/過去課程")
+  .on("value", function (snapshot) {
+    //console.log(snapshot.val());
+    var result = snapshot.val();
+    console.log("過去課程 is read or changed");
+    try {
+      courseHistory = JSON.parse(result);
+      //console.log(courseHistory);
+    } catch (e) {
+      console.log("courseHistory 讀取失敗");
+    }
+  }); 
   
   // 讀取目前 courseMember
   console.log("讀取資料庫課程管理...");
@@ -1273,21 +1287,7 @@ function ReadDataFromFirebase(){
       console.log("courseMember 讀取失敗");
     }
   });
-  
-  // 讀取 memberData
-//  console.log("讀取資料庫客戶管理...");
-//  database.ref("users/三峽運動中心/客戶管理")
-//  .on("value", function (snapshot) {
-//    //console.log(snapshot.val());    
-//    var result = snapshot.val();
-//    console.log("客戶管理 is read or changed");
-//    try {      
-//      memberData = JSON.parse(result.會員資料); 
-//      //console.log(memberData);
-//    } catch (e) {
-//      console.log("Member Data 讀取失敗");
-//    }
-//  });  
+   
   
   // 讀取 coachSet
   console.log("讀取資料庫客戶管理...");
